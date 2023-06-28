@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head class="mainHead">
+  <meta charset="utf-8" />
+  <title>Лабораторная работа №3</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="http://d3js.org/d3.v7.min.js"> </script>
+  <!-- <script src="js.js"></script> -->
+</head>
+
+<body>
+  <script>
+    function f(x) {
+      /* if (x !== 1) {
+        return Math.cbrt(x / ((x - 1) * (x - 1)));
+      }
+      else {
+        return null;
+      } */
+      return Math.cbrt(x / ((x - 1) * (x - 1)));
+    }
+    const a = parseFloat(prompt("Введите значение a:"));
+    const b = parseFloat(prompt("Введите значение b:"));
+
+    // Проверка на корректность введенных значений a и b
+    if (isNaN(a) || isNaN(b)) {
+      alert("Пожалуйста, введите числовые значения для a и b.");
+    }
+    else if (a >= b) {
+      alert("Пожалуйста, задайте правильный интервал (а < b).");
+    }
+    else {
+      // Здесь можно вызвать функцию для отрисовки функции с использованием значений a и b
+      drawFunction(a, b);
+    }
+    function drawFunction() {
+
+      n = Math.round((b - a) * 100);
+      h = (b - a) / (n - 1);
+      let arrGraph = [];
+      for (let i = 0; i < n; i++) {
+        let x = a + i * h;
+        arrGraph.push({ 'x': x, 'f': f(x) });
+      }
+
+      let width = 600;
+      let height = 600;
+      let marginX = 50;
+      let marginY = 40;
+
+
+      let svg = d3.select("body")
+        .append("svg")
+        .attr("height", height)
+        .attr("width", width)
+        .style("border", "solid thin grey");
+
+      let minMaxF = d3.extent(arrGraph.map(d => d.f));
+      let min = minMaxF[0];
+      let max = minMaxF[1];
+
+
+
+      let scaleX = d3.scaleLinear()
+        .domain([a, b])
+        .range([0, width - 2 * marginX]);
+      let scaleY = d3.scaleLinear()
+        .domain([min, max])
+        .range([height - 2 * marginY, 0]);
+
+      // создание осей
+      let axisX = d3.axisBottom(scaleX); // горизонтальная
+      let axisY = d3.axisLeft(scaleY);   // вертикальная
+
+      // отрисовка осей в SVG-элементе
+      svg.append("g")
+        .attr("transform", `translate(${marginX}, ${scaleY(0) + marginY})`)
+        .call(axisX);
+      svg.append("g")
+        .attr("transform", `translate(${marginX + scaleX(0)}, ${marginY})`)
+        .call(axisY);
+
+      let lineF = d3.line()
+        //.defined(d => d.f !== null) // Игнорируем точки разрыва
+        .x(function (d) {
+          return scaleX(d.x);
+        })
+        .y(function (d) {
+          return scaleY(d.f);
+        })
+
+      svg.append("path") // добавляем путь
+        // созданному пути добавляются данные массива arrGraph в качестве атрибута
+        .datum(arrGraph)
+        // вычисляем координаты концов линий с помощью функции lineF
+        .attr("d", lineF)
+        // помемещаем путь из линий в область построения
+        .attr("transform", `translate(${marginX}, ${marginY})`)
+        // задаем стиль линии графика
+        .style("stroke-width", "1")
+        .style("stroke", "red")
+
+      svg.selectAll("circle")
+        .data(arrGraph)
+        .filter(d => d.f == 0)
+        .enter()
+        .append("circle")
+        .attr("cx", d => scaleX(d.x))
+        .attr("cy", 0) // Размещаем маркеры внизу графика
+        .attr("r", 5)
+        .attr("fill", "blue");
+
+    }
+  </script>
+</body>
+
+</html>

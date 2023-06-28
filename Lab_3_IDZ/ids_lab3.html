@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Движение фигуры по астроиде с использованием D3.js</title>
+    <style>
+        button {
+            display: block;
+        }
+
+        circle {
+            opacity: .3;
+        }
+
+        circle.blue {
+            opacity: 1;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+
+<body>
+    <button id="startButton" onclick="start()">Начать</button>
+    <button id="stopButton" onclick="stop()">Остановить</button>
+
+    <script>
+        function x(t, R) {
+            return R * Math.cos(t / 4) * Math.cos(t / 4) * Math.cos(t / 4);
+        }
+        function y(t, R) {
+            return R * Math.sin(t / 4) * Math.sin(t / 4) * Math.sin(t / 4);
+        }
+
+        let a = 0;
+        let R = 200;
+        let b = 8 * Math.PI;
+        let n = 1000;
+        let h = (b - a) / (n - 1);
+        let arrGraph = [];
+        for (let i = 0; i < n; i++) {
+            let t = a + i * h;
+            arrGraph.push({ 'x': x(t, R), 'y': y(t, R) });
+        }
+
+        let width = 500;
+        let height = 500;
+        let marginX = 50;
+        let marginY = 40;
+
+
+        let svg = d3.select("body")
+            .append("svg")
+            .attr("height", height)
+            .attr("width", width)
+            .style("border", "solid thin grey");
+
+        svg.selectAll(".dot")
+            .data(arrGraph)
+            .enter()
+            .append("circle")
+            .attr("r", 3)
+            .attr("cx", function (d) { return d.x; })
+            .attr("cy", function (d) { return d.y; })
+            .attr("transform", `translate(${250}, ${250})`)
+            .style("fill", "grey");
+
+
+        
+        function task(i, r, x, y) {
+            setTimeout(function () {
+                svg.selectAll("circle.blue").remove();
+                svg.append("circle")
+                    .attr("class", "blue")
+                    .attr("r", r)
+                    .attr("cx", x)
+                    .attr("cy", y)
+                    .attr("transform", `translate(${250}, ${250})`)
+                    .style("fill", "blue");
+            }, 10 * i);
+        }
+
+        let q = true;
+        let timer;
+
+        function start() {
+            if (q) {
+                q = false;
+                for (let i = 0; i < n; i++) {
+                    let t = a + i * h;
+                    task(i, 3, x(t, R), y(t, R));
+                }
+                timer = setInterval(function () {
+                    for (let i = 0; i < n; i++) {
+                        let t = a + i * h;
+                        task(i, 3, x(t, R), y(t, R));
+                    }
+                }, 10000);
+            }
+        }
+
+        function stop() {
+            q = true;
+            clearInterval(timer);
+            svg.selectAll("circle.blue").remove();
+        }
+
+    </script>
+</body>
+
+</html>
